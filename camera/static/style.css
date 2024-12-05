@@ -25,7 +25,7 @@ textarea {
 .main-container {
   position: relative;
   width: 1440px;
-  height: 1650px;
+  height: 1800px;
   margin: 0 auto;
   background: #ffffff;
   overflow: hidden;
@@ -747,28 +747,6 @@ button:hover .try-demo {
   color: #000000;
 }
 
-.led-buttons {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  z-index: 113;
-}
-.led-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  transition: background-color 0.3s;
-}
-.led-button:hover {
-  background-color: #45a049;
-}
-.led-button.active {
-  background-color: #ff5722;
-}
 
 .try-demo {
   flex-shrink: 0;
@@ -836,6 +814,7 @@ button:hover .try-demo {
   width: 1440px;
   height: 264px;
   margin: 1200px 0 0 0;
+  top: 10em;
   background: #ffffff;
   z-index: 58;
   overflow: hidden;
@@ -1566,13 +1545,14 @@ button:hover .try-demo {
   align-items: flex-start;
   justify-content: center;
   flex-wrap: nowrap;
-  gap: 32px;
+  /* gap: 2px; */
   position: absolute;
   width: 1279px;
-  height: 726px;
+  height: 750px;
   top: 740px;
   left: 88px;
   z-index: 113;
+  margin-bottom: 10rem;
 }
 .card-59 {
   display: flex;
@@ -1692,4 +1672,52 @@ footer {
 
 footer p{
   font-size: 0.8em;
+  font-family: Montserrat;
+}
+
+.led-controls {
+  align-self: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2rem;
+}
+
+.led-controls .button {
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 16px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Green for active (ON) */
+.led-controls button.active {
+  background-color: #4CAF50; /* Green */
+}
+
+/* Red for inactive (OFF) */
+.led-controls button.inactive {
+  background-color: #f44336; /* Red */
+}
+
+h3 {
+  align-self: center;
+  flex-shrink: 0;
+  flex-basis: auto;
+  position: relative;
+  min-width: 0;
+  color: #000000;
+  font-family: Inter, var(--default-font-family);
+  font-size: 30px;
+  font-weight: 500;
+  /* line-height: 90px; */
+  text-align: left;
+  white-space: nowrap;
+  z-index: 116;
+  margin-top: 10rem;
+
 }

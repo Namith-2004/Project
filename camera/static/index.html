@@ -145,8 +145,7 @@
       </div>
       <div class="card">
         <!-- <img src="./images/7f12ea1300756f144a0fb5daaf68dbfc01103a46.png" alt="Gesture Control Video Feed"> -->
-        <img id="video-feed" src="http://localhost:8000/video_feed" alt="Gesture Control Video Feed">
-        <div id="gestureDisplay">Gesture: None</div>       
+        <img id="video-feed" src="http://localhost:8000/video_feed" alt="Gesture Control Video Feed">      
       </div>
       <div class="card1">
         <span class="interactive-guide1">Try This</span>
@@ -158,8 +157,16 @@
           <button onclick="switchCamera('ipcam')"><a style="text-decoration: none;" class="try-demo">External Cam</a></button>
         </div> 
       </div>
-      
       <div class="frame">
+        <h3>Manual Control</h3> 
+        <div class="led-controls">
+          <!-- <h3>Manual Control</h3>  -->
+          <button  id="led1" onclick="toggleLed(1)" class="try-demo">LED 1</button>
+          <button  id="led2" onclick="toggleLed(2)" class="try-demo">LED 2</button>
+          <button  id="led3" onclick="toggleLed(3)" class="try-demo">LED 3</button>
+          <button  id="led4" onclick="toggleLed(4)" class="try-demo">LED 4</button>
+          <button  id="led5" onclick="toggleLed(5)" class="try-demo">LED 5</button>
+        </div>
         <div class="card-59">
           <div class="copy">
             <span class="interactive-guide">Interactive Guide</span>
@@ -172,13 +179,6 @@
         
       </div>
     </div>
-    <div class="led-buttons">
-      <button class="led-button" data-led="1">LED 1</button>
-      <button class="led-button" data-led="2">LED 2</button>
-      <button class="led-button" data-led="3">LED 3</button>
-      <button class="led-button" data-led="4">LED 4</button>
-      <button class="led-button" data-led="5">LED 5</button>
-    </div>
     <footer>
       <p>&copy; CopyRight 2024. All rights reserved - Design & Developed by Namith K P</p>
     </footer>
@@ -186,24 +186,28 @@
       const socket = new WebSocket('ws://localhost:8765');
       const canvas = document.getElementById('videoCanvas');
       const ctx = canvas.getContext('2d');
-      const ledButtons = document.querySelectorAll('.led-button');
-      const gestureDisplay = document.getElementById('gestureDisplay');
+
+      socket.onopen = function() {
+          console.log('WebSocket connection established');
+        };
 
       socket.onmessage = function(event) {
           const data = JSON.parse(event.data);
+          console.log('Received data:', data); // Log received data for debugging 
           if (data.type === 'frame') {
               const img = new Image();
               img.onload = function() {
                   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
               };
               img.src = 'data:image/jpeg;base64,' + data.data;
-          }
+          } else if (data.type === 'led_status') {
+              console.log('LED States:', data.led_states); 
+              updateLedStatus(data.led_states);
+        }
+      };
 
-          // Handle gesture recognition
-          if (data.type === 'gesture') {
-                    gestureDisplay.textContent = `Gesture: ${data.gesture}`;
-                    updateLedButtons(data.fingers);
-                }
+      socket.onerror = function(error) {
+          console.error('WebSocket Error:', error);
       };
 
       function switchCamera(cameraName) {
@@ -213,35 +217,35 @@
           }));
       }
 
-       // LED Button Control
-        ledButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const ledNumber = parseInt(button.dataset.led, 10); // Get LED number (1 to 5)
-                const isActive = button.classList.contains('active'); // Check if the button is active
-
-                // Toggle the LED state
-                socket.send(JSON.stringify({
-                    type: 'led_control',
-                    led: ledNumber,
-                    state: !isActive // Send the new state to the server
-                }));
-
-                // Toggle the active class for visual feedback
-                button.classList.toggle('active');
-            });
-        });
-
-
-      // Update LED buttons based on gesture
-      function updateLedButtons(fingers) {
-          ledButtons.forEach((button, index) => {
-              if (fingers[index]) {
-                  button.classList.add('active');
-              } else {
-                  button.classList.remove('active');
-              }
-          });
+      function toggleLed(led) {
+        console.log(`Toggling LED ${led}`);
+        socket.send(JSON.stringify({
+          type: 'led_control',
+          led: led
+        }));
       }
+
+      function updateLedStatus(ledStates) {
+        console.log('Updating LED button states', ledStates);
+
+            // Ensure LED states array has the correct length (5 LEDs in total)
+        if (ledStates.length !== 5) {
+          console.error('Invalid LED states array:', ledStates);
+           return;
+        }
+        
+        for (let i = 1; i <= 5; i++) {
+          const ledBtn = document.getElementById(`led${i}`);
+          if (ledStates[i - 1] === 1) {
+            ledBtn.classList.add('active');
+            ledBtn.classList.remove('inactive');
+          } else {
+            ledBtn.classList.add('inactive');
+            ledBtn.classList.remove('active');
+          }
+        }
+      }
+
     </script>
     <script>
       // Smooth scrolling

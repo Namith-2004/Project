@@ -11,6 +11,8 @@ import mimetypes
 import controller as cnt
 from cvzone.HandTrackingModule import HandDetector
 
+led_states = [0, 0, 0, 0, 0]
+
 class MultiCameraServer:
     def __init__(self):
         # Camera sources
@@ -158,7 +160,8 @@ class MultiCameraServer:
                         await websocket.send(json.dumps({
                             'type': 'frame',
                             'data': frame_base64,
-                            'camera': self.current_camera
+                            'camera': self.current_camera,
+                            'led_states': self.led_states  # Send LED states
                         }))
                     await asyncio.sleep(0.03)
 
@@ -173,15 +176,13 @@ class MultiCameraServer:
                                 print(f"Camera switch requested: {camera}")
 
                     # # LED control
-                    # elif data.get('type') == 'led_control':
-                    #     led = int(data.get('led')) - 1
-                    #     if 0 <= led < 5:
-                    #         # Toggle LED state
-                    #         self.led_states[led] = 1 - self.led_states[led]
-                    #         # Update actual LEDs
-                    #         led_list = [1 if state else 0 for state in self.led_states]
-                    #         cnt.led(led_list, 1)
-                    #         print(f"LED {led + 1} toggled to {self.led_states[led]}")
+                        elif data.get('type') == 'led_control':
+                            led = int(data.get('led')) - 1
+                            if 0 <= led < 5:
+                                # Toggle LED state
+                                self.led_states[led] = 1 - self.led_states[led]
+                                cnt.led(self.led_states, 1)  # Update the LEDs
+                                print(f"LED {led + 1} toggled to {self.led_states[led]}")
 
                     except Exception as e:
                         print(f"Message handling error: {e}")
@@ -192,30 +193,7 @@ class MultiCameraServer:
         
             await asyncio.gather(stream_task, message_task)
         
-    async def control_leds(websocket, path):
-        print("New WebSocket connection")
-        try:
-            while True:
-                message = await websocket.recv()
-                data = json.loads(message)
-
-                if data['type'] == 'led_control':  # Handle LED control messages
-                    led_number = data['led']  # LED number (1 to 5)
-                    state = data['state']  # State (true for ON, false for OFF)
-                    
-                    # Control the corresponding LED
-                    if 1 <= led_number <= 5:
-                        led_list[led_number - 1].write(1 if state else 0)  # Turn LED ON/OFF
-                        print(f"LED {led_number} {'ON' if state else 'OFF'}")
-
-                    # Optionally, send feedback to the client
-                    await websocket.send(json.dumps({
-                        'status': f'LED {led_number} {"ON" if state else "OFF"}'
-                    }))
-        except websockets.exceptions.ConnectionClosed as e:
-            print("Connection closed", e)
-
-
+    
     async def start_websocket_server(self):
         server = await websockets.serve(self.websocket_handler, "0.0.0.0", 8765)
         await server.wait_closed()
